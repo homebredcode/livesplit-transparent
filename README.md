@@ -77,7 +77,21 @@ powershell -NoProfile -ExecutionPolicy Bypass -File livesplit-transparent.ps1 -C
 
 Every second, the script finds the LiveSplit window and gives it a layered-window color key (`SetLayeredWindowAttributes` with `LWA_COLORKEY`), keeping whatever opacity LiveSplit already uses. It checks again every second because LiveSplit resets the window when its opacity setting changes. On exit it removes the color key again.
 
-`-ExecutionPolicy Bypass` is there because Windows blocks unsigned `.ps1` scripts by default. It only applies to this one launch and doesn't change any system setting.
+## Why `-ExecutionPolicy Bypass`?
+
+The launcher starts the script with:
+
+```
+powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File livesplit-transparent.ps1 ...
+```
+
+- **What the execution policy is:** a Windows setting that decides which `.ps1` scripts PowerShell will run. On most PCs it's `Restricted` or `RemoteSigned`, so a script downloaded from the internet is blocked unless it's signed with a paid code-signing certificate. This one isn't signed.
+- **What `Bypass` does:** it lets PowerShell run this one script, **for this one launch only**. It doesn't change your PC's policy, and it doesn't make any other script runnable. When the script exits, nothing is left behind.
+- **What it is not:** it isn't a security hole and it doesn't give extra rights. The script runs as your normal user, without admin. Microsoft itself says the execution policy is a safety guard against running scripts by accident, not a security boundary.
+- **The alternative:** set your policy yourself (`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`) and unblock the file (right-click → Properties → **Unblock**). That's more steps for the same result, so the launcher uses `Bypass` instead.
+- **`-WindowStyle Hidden`** only hides the console window, so no black box stays open next to LiveSplit. The tray icon shows that it's running.
+
+Since the script is plain text, you can open `livesplit-transparent.ps1` in Notepad and read exactly what it does before you run it.
 
 ## Troubleshooting
 
